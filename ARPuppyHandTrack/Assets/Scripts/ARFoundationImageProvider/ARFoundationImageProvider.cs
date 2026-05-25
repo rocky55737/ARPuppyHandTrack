@@ -3,7 +3,6 @@ using Mediapipe.Unity;
 using System;
 using System.Collections;
 using Unity.Collections;
-using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
@@ -33,7 +32,7 @@ public class ARFoundationImageProvider : MonoBehaviour
         _cameraManager.frameReceived -= OnFrameReceived;
     }
 
-    private unsafe void OnFrameReceived(ARCameraFrameEventArgs eventArgs)
+    private void OnFrameReceived(ARCameraFrameEventArgs eventArgs)
     {
         // 1단계: ARFoundation에서 CPU 이미지 가져오기
         if (!_cameraManager.TryAcquireLatestCpuImage(out XRCpuImage image))
@@ -65,7 +64,7 @@ public class ARFoundationImageProvider : MonoBehaviour
         }
         
         // 변환 실행 및 결과물을 버퍼에 저장
-        image.Convert(conversionParams, new IntPtr(NativeArrayUnsafeUtility.GetUnsafePtr(_imageBuffer)), _imageBuffer.Length);
+        image.Convert(conversionParams, _imageBuffer);
 
         // 중요: 사용한 이미지는 반드시 Dispose 해주어야 메모리 누수를 막을 수 있습니다.
         image.Dispose();
