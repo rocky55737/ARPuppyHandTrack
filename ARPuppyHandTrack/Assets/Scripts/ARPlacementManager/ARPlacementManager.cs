@@ -20,18 +20,14 @@ public class ARPlacementManager : MonoBehaviour
     public GameObject SpawnedPuppy => spawnedPuppy;
     private List<ARRaycastHit> hits = new List<ARRaycastHit>();
 
-    /// <summary>
-    /// 이 함수는 UI 버튼의 OnClick 이벤트에 연결될 것입니다.
-    /// </summary>
+    private string _statusMessage = "";
+    private float _statusClearTime;
+
     public void OnCallPuppyButtonPressed()
     {
-        // 1. 종소리를 재생합니다.
         if (bellAudioSource != null)
-        {
             bellAudioSource.Play();
-        }
 
-        // 2. 화면 중앙에서 Raycast를 쏩니다.
         Vector2 screenCenter = new Vector2(Screen.width / 2, Screen.height / 2);
         if (arRaycastManager.Raycast(screenCenter, hits, TrackableType.PlaneWithinPolygon))
         {
@@ -39,21 +35,45 @@ public class ARPlacementManager : MonoBehaviour
 
             if (spawnedPuppy == null)
             {
-                // 3-1. 강아지가 없으면: 새로 소환합니다.
                 spawnedPuppy = Instantiate(puppyPrefab, hitPose.position, hitPose.rotation);
+                ShowStatus("강아지 소환!");
             }
             else
             {
-                // 3-2. 강아지가 있으면: 해당 위치로 이동시킵니다. (순간이동)
                 spawnedPuppy.transform.position = hitPose.position;
-                
-                // 강아지가 카메라를 바라보도록 방향을 회전시킵니다.
+
                 Vector3 cameraPosition = Camera.main.transform.position;
                 Vector3 directionToCamera = cameraPosition - spawnedPuppy.transform.position;
-                directionToCamera.y = 0; // 강아지가 눕지 않도록 y축 회전은 고정합니다.
-                
+                directionToCamera.y = 0;
                 spawnedPuppy.transform.rotation = Quaternion.LookRotation(-directionToCamera);
+                ShowStatus("강아지 이동!");
             }
         }
+        else
+        {
+            ShowStatus("바닥 감지 실패 — 바닥을 향해 천천히 스캔하세요");
+        }
+    }
+
+    private void ShowStatus(string message)
+    {
+        _statusMessage = message;
+        _statusClearTime = Time.time + 3f;
+    }
+
+    private void OnGUI()
+    {
+        if (string.IsNullOrEmpty(_statusMessage) || Time.time > _statusClearTime) return;
+
+        var style = new GUIStyle(GUI.skin.box)
+        {
+            fontSize = Mathf.RoundToInt(Screen.height * 0.04f),
+            alignment = TextAnchor.MiddleCenter
+        };
+        style.normal.textColor = Color.white;
+
+        float w = Screen.width * 0.8f;
+        float h = Screen.height * 0.1f;
+        GUI.Box(new Rect((Screen.width - w) / 2, Screen.height * 0.15f, w, h), _statusMessage, style);
     }
 }
