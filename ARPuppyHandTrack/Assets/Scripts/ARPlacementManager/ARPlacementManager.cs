@@ -17,6 +17,7 @@ public class ARPlacementManager : MonoBehaviour
     private AudioSource bellAudioSource;
 
     private GameObject spawnedPuppy;
+    public GameObject SpawnedPuppy => spawnedPuppy;
     private List<ARRaycastHit> hits = new List<ARRaycastHit>();
 
     /// <summary>
