@@ -1,0 +1,5 @@
+
+# Build outputs
+Builds/
+*.apk
+*.aab
